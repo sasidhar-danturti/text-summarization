@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="/static/js/main.js" type="text/javascript"></script>
+    <link rel="stylesheet" href="/static/css/main.css">
+</head>
+<body>
+<div id="box">
+    <div class="divInBox">
+        <span>Training data:</span><br/>
+        <textarea id="boxText" class="txtCommon"></textarea>
+    </div>
+    <div class="divInBox">
+        <span>Summary: </span><br/>
+        <textarea id="boxSumm" class="summaryText txtCommon"></textarea>
+    </div>
+    <div class="divInBox">
+        <button id="boxSave" onclick="saveData()">Save Data</button>
+        <button id="boxSubmit" onclick="trainData()">Train Data</button>
+    </div>
+    <div class="divInBox">
+        <span>Result:</span><br/>
+        <textarea id="boxResultText" class="summaryText txtCommon"></textarea>
+    </div>
+</div>
+</body>
+</html>

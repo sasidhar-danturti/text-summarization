@@ -1,0 +1,29 @@
+#box{
+  width: 900px;
+  height: auto;
+  position: absolute;
+  top:110px;
+  // bottom: 0;
+  left: 0;
+  right: 0;
+  margin: auto;
+}
+
+.divInBox{
+  margin: 5px 0 15px 0;
+  position: relative;
+  left: 120px;
+}
+
+.txtCommon{
+  margin: 2px 0 0 0;
+  width: 700px;
+}
+
+#boxText{
+  height: 200px;
+}
+
+.summaryText{
+  height: 80px;
+}
