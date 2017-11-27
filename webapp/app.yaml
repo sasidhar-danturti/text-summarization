@@ -1,9 +1,8 @@
 runtime: python27
-threadsafe: yes
 api_version: 1
+threadsafe: yes
 
-skip_files:
-- lib/tensorflow
+env_variables:
 
 handlers:
 - url: /static

@@ -2,18 +2,17 @@
 Entry point for application.
 """
 
-import logging, webapp2, json, base64, datetime, time
-# from itertools import islice
-from textwrap import dedent
-from file_utils import FileUtils
+import logging, datetime, base64, json, time, webapp2
 from os.path import join, dirname
-import constants as con
-# from prediction import Prediction
-import constants as con
-from process_data import ProcessData
-from google.appengine.ext.webapp import template
-from google.appengine.api.logservice import logservice
+from textwrap import dedent
 from google.appengine.api import users
+from google.appengine.api.logservice import logservice
+from google.appengine.ext.webapp import template
+import constants.constants as con
+# from prediction import Prediction
+from process.process_data import ProcessData
+from utility.file_utils import FileUtils
+
 
 def get_logs(offset=None):
     # Logs are read backwards from the given end time. This specifies to read
@@ -75,7 +74,6 @@ class DecodeDataPage(webapp2.RequestHandler):
 
         # If user is logged in redirect to "decoding.html"
         path = join(dirname(__file__), "decoding.html")
-        logging.debug(path)
         self.response.out.write(template.render(path, None))
 
 
@@ -117,12 +115,13 @@ class ProcessArticle(webapp2.RequestHandler):
         operation_type = json_data.get(con.OPERATIONTYPE)
         data = json_data.get(con.DATA)
         logging.info("Operation type: {}".format(operation_type))
-        logging.info("data is : {}".format(str(data)))
+        logging.info("Request data: {}".format(data))
         if operation_type and operation_type == con.SAVE:
             response = {
                 "responseType": "Failed to save file!"
             }
             # Save response on bucket in file
+            file_name = ""
             file_name = FileUtils().create_file(data=data)
             if file_name:
                 response = {
@@ -136,17 +135,22 @@ class ProcessArticle(webapp2.RequestHandler):
         elif operation_type == con.TRAIN:
             # Initiate training
             # Process Data
-            ProcessData().process_data(data=data)
-            pass
+            try:
+                ProcessData().process_data()
+                response = {
+                    "message": "Training task updated.",
+                    "responseType": "Success"
+                }
+            except Exception as ex:
+                pass
 
         else:
             # Initiate decoding
             pass
-
         logging.info("---------------------------")
-
         self.response.headers['content-Type'] = 'application/json'
         self.response.out.write(json.dumps(response))
+
 
 class LogInfoPage(webapp2.RequestHandler):
     def get(self):
