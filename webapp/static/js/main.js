@@ -1,5 +1,5 @@
 function decodeData(){
-    article = $("#boxText").val();
+    article = $("#textArticle").val();
     if(article == ""){
         alert("Empty Article!")
         return
@@ -22,12 +22,12 @@ function trainData() {
 }
 
 function saveData() {
-    article = $("#boxText").val();
+    article = $("#textArticle").val();
     if(article == ""){
         alert("Empty Article!")
         return
     }
-    summary = $("#boxSumm").val();
+    summary = $("#textSumm").val();
     if(summary == ""){
         alert("Empty Summary!")
         return
@@ -51,7 +51,11 @@ function processData(requestData){
         dataType: "json",
         data: JSON.stringify(requestData),
         success: function(data){
-            $("#boxResultText").text(data.responseType)
+            if (requestData["operationType"] == "decode"){
+                $("#textResult").text(data.responseType);
+            }else{
+                  alert(data.responseType);
+            }
         },
         error: function(data){
             alert("Error");

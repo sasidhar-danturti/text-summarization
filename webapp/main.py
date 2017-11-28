@@ -63,21 +63,7 @@ def authorise_user(uri):
     return url
 
 
-class DecodeDataPage(webapp2.RequestHandler):
-    def get(self):
-        logging.debug("In Class DecodeDataPage")
-        # Validate request
-        redirect_url = authorise_user(self.request.uri)
-        if redirect_url:
-            logging.debug("Redirecting")
-            self.redirect(redirect_url)
-
-        # If user is logged in redirect to "decoding.html"
-        path = join(dirname(__file__), "decoding.html")
-        self.response.out.write(template.render(path, None))
-
-
-class TrainDataPage(webapp2.RequestHandler):
+class HomePage(webapp2.RequestHandler):
     def get(self):
         logging.debug("In Class TrainDataPage")
         # Validate request
@@ -86,8 +72,8 @@ class TrainDataPage(webapp2.RequestHandler):
             logging.debug("Redirecting")
             self.redirect(redirect_url)
 
-        # If user is logged in redirect to "training.html"
-        path = join(dirname(__file__), "training.html")
+        # If user is logged in redirect to "homepage.html"
+        path = join(dirname(__file__), "homepage.html")
         self.response.out.write(template.render(path, None))
 
 
@@ -168,8 +154,7 @@ class LogInfoPage(webapp2.RequestHandler):
                 '<pre>{}</pre>'.format(format_log_entry(log)))
 
 app = webapp2.WSGIApplication([
-    ('/decode', DecodeDataPage),
-    ('/training', TrainDataPage),
+    ('/', HomePage),
     ('/process-article', ProcessArticle),
     ('/logs', LogInfoPage)
 ])

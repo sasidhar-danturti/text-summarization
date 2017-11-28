@@ -1,29 +1,60 @@
 #box{
-  width: 900px;
   height: auto;
   position: absolute;
-  top:110px;
-  // bottom: 0;
-  left: 0;
-  right: 0;
+  top:20px;
   margin: auto;
 }
 
 .divInBox{
-  margin: 5px 0 15px 0;
+  margin: 10px 0 15px 0;
   position: relative;
-  left: 120px;
 }
 
 .txtCommon{
   margin: 2px 0 0 0;
-  width: 700px;
+  width: 100%;
+  overflow: scroll;
+  resize: none;
+  overflow-y: scroll;
+  overflow-x: scroll;
+  overflow:-moz-scrollbars-vertical;
 }
 
-#boxText{
-  height: 200px;
+#textArticle{
+  height: 320px;
 }
 
 .summaryText{
-  height: 80px;
+  height: 100px;
+}
+
+body {
+	background:url('../images/05.jpg') no-repeat 0px 0px;
+	background-size: cover;
+	font-family: 'Open Sans', sans-serif;
+	background-attachment: fixed;
+    background-position: center;
+}
+.tab-ul {
+    width: 100%;
+}
+
+.labelCommon{
+    font-size: 18px;
+    color: #fff;
+}
+.whiteFont{
+    color: #fff !important;
+}
+.align-right {
+    float: right;
+}
+
+.btnCommon {
+    margin: 0 10px 5px 0;
+}
+
+.alert-ele{
+ width:40%;
+ height:10px;
 }

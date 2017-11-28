@@ -2,26 +2,105 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+            integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+            crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js"
+            integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
+            crossorigin="anonymous"></script>
+    <link rel="stylesheet"
+          href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css"
+          integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"
+          crossorigin="anonymous">
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js"
+            integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
+            crossorigin="anonymous"></script>
+    <script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-3.2.1.min.js"></script>
     <script src="/static/js/main.js" type="text/javascript"></script>
     <link rel="stylesheet" href="/static/css/main.css">
 </head>
 <body>
-<div id="box">
-    <div class="divInBox">
-        <span>Article:</span><br/>
-        <textarea id="boxText" class="txtCommon"></textarea>
+<div id="box" class="container-fluid">
+    <!--Navigation Bar-->
+    <nav class="navbar navbar-expand-lg navbar-light">
+        <ul class="nav nav-tabs tab-ul">
+            <li>
+                <a class="active nav-link labelCommon"
+                   data-toggle="tab" href="#data-submission">
+                    Data Submission
+                </a>
+            </li>
+            <li>
+                <a class="nav-link labelCommon"
+                   data-toggle="tab" href="#decode">
+                    Decode
+                </a>
+            </li>
+            <ul class="navbar-nav flex-row ml-md-auto d-none d-md-flex">
+                <li class="nav-item">
+                    <button class="nav-link whiteFont btn btn-info mb-3 mb-md-0 ml-md-3"
+                            onclick="trainData()">
+                        Train Data
+                    </button>
+                </li>
+            </ul>
+        </ul>
+    </nav>
+
+    <!--Article-->
+    <div class="row divInBox">
+        <div class="col-sm-2">
+            <h2 class="whiteFont">Article:</h2>
+        </div>
+        <div class="col-sm-10">
+            <textarea id="textArticle" class="txtCommon"></textarea>
+        </div>
     </div>
-    <div class="divInBox">
-        <span>Summary (For training data): </span><br/>
-        <textarea id="boxSumm" class="summaryText txtCommon"></textarea>
-    </div>
-    <div class="divInBox">
-        <button id="boxSubmit" onclick="trainData()">Submit</button>
-    </div>
-    <div class="divInBox">
-        <span>Result:</span><br/>
-        <textarea id="boxResultText" class="summaryText txtCommon"></textarea>
+
+    <!--Summary / Result-->
+    <div class="tab-content" id="pills-tabContent">
+        <!--Summary -->
+        <div class="tab-pane active" id="data-submission">
+            <div class="row divInBox">
+                <div class="col-sm-2">
+                    <h4 class="whiteFont">Summary:</h4>
+                </div>
+                <div class="col-sm-10">
+                    <textarea id="textSumm"
+                              class="summaryText txtCommon"></textarea>
+                </div>
+            </div>
+            <button id="btnSave"
+                    class="row trainingEle btn btn-primary align-right btnCommon"
+                    onclick="saveData()">
+                Save Data
+            </button>
+            <!--<div class="row alert alert-success alert-ele"-->
+                 <!--style="display:none;"-->
+                 <!--role="alert"></div>-->
+        </div>
+        <!--Result-->
+        <div class="tab-pane" id="decode">
+            <div class="row">
+                <div class="col-sm-12">
+                    <button id="btnSubmit"
+                            class="decodeEle btn btn-primary align-right btnCommon"
+                            onclick="decodeData()">
+                        Submit
+                    </button>
+                </div>
+            </div>
+            <div class="row divInBox" id="boxResult">
+                <div class="col-sm-2">
+                    <div><h4 class="whiteFont">Result:</h4></div>
+                </div>
+                <div class="col-sm-10">
+                    <textarea id="textResult"
+                              class="summaryText txtCommon">
+                    </textarea>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 </body>
