@@ -20,7 +20,7 @@ class ProcessData:
             "Content-Type": "application/json",
         }
         res = self._place_request(
-            url="http://35.196.110.160:5000/train",
+            url="http://35.196.122.218:5000/train",
             data={"input": "{}".format(job_id)}
         )
         logging.debug("Training request response: {}".format(res.text))
@@ -35,7 +35,7 @@ class ProcessData:
     def decode_data(self, article):
         logging.debug("In decode_data()...")
         self._place_request(
-            url="http://35.196.110.160:5000/decode",
+            url="http://35.196.122.218:5000/decode",
             data={"input": "{}".format(article)}
         )
 

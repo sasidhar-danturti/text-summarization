@@ -15,7 +15,7 @@ gcs.set_default_retry_params(
 
 class FileUtils:
     def __init__(self):
-        self.bucket_name = "sasidhar-project1-mlengine"
+        self.bucket_name = "text-summarization-webapp.appspot.com"
 
         self.bucket = '/' + self.bucket_name
 
@@ -49,3 +49,5 @@ class FileUtils:
         json_text = json.loads(text)
         return json_text
 
+
+FileUtils().create_file("{'article':'test12345'}")
