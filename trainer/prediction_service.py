@@ -25,7 +25,6 @@ import sys
 import time
 
 import tensorflow as tf
-import batch_reader
 import data
 import seq2seq_decode_article
 import seq2seq_attention_model
@@ -34,14 +33,20 @@ import json
 from flask import Flask, request
 app = Flask(__name__)
 
+bucket_name = "gs://text-summarization-webapp.appspot.com"
+
+data_path = bucket_name + "/data/data"
+vocab_path = bucket_name + "/data/vocab_data/vocab"
+log_root = bucket_name + "/data/data/log_root"
+
 FLAGS = tf.app.flags.FLAGS
-tf.app.flags.DEFINE_string('data_path','gs://text-summarization-webapp.appspot.com/data/data', 'data path')
-tf.app.flags.DEFINE_string('vocab_path','gs://text-summarization-webapp.appspot.com/data/vocab_data/vocab', 'Path expression to text vocabulary file.')
+tf.app.flags.DEFINE_string('data_path',data_path, 'data path')
+tf.app.flags.DEFINE_string('vocab_path',vocab_path, 'Path expression to text vocabulary file.')
 tf.app.flags.DEFINE_string('article_key', 'article',
                            'tf.Example feature key for article.')
 tf.app.flags.DEFINE_string('abstract_key', 'abstract',
                            'tf.Example feature key for abstract.')
-tf.app.flags.DEFINE_string('log_root','gs://text-summarization-webapp.appspot.com/data/log_root',  'Directory for model root.')
+tf.app.flags.DEFINE_string('log_root',log_root,  'Directory for model root.')
 tf.app.flags.DEFINE_string('train_dir', 'log_root/train', 'Directory for train.')
 tf.app.flags.DEFINE_string('eval_dir', 'log_root/eval', 'Directory for eval.')
 tf.app.flags.DEFINE_string('decode_dir', '/home/synerzip/Sasidhar/Learning/Tensorflow/textsum/log_root/decode', 'Directory for decode summaries.')
@@ -95,8 +100,6 @@ hps = seq2seq_attention_model.HParams(
 
 
 tf.set_random_seed(FLAGS.random_seed)
-
-decode_mdl_hps = hps
 # Only need to restore the 1st step and reuse it since
 # we keep and feed in state for each step's output.
 decode_mdl_hps = hps._replace(dec_timesteps=1)
@@ -114,14 +117,14 @@ def decode():
 
 import os
 import vocab
-@app.route("/train",methods=['POST'])
+# @app.route("/train",methods=['POST'])
 def summarize():
     # creatthe vocabulary file first and then  submit the job
-    v = vocab.Vocab("gs://text-summarization-webapp.appspot.com/data/data","data/vocab")
+    v = vocab.Vocab(data_path,"data/vocab")
     v.create_vocab_file()
-    input_data  = json.loads(request.data)
-    os.system("sudo sh submit_training_job.sh " + str(input_data.get("input")))
+    #input_data  = json.loads(request.data).get("input")
+    input_data = "test"
+    os.system("sudo sh submit_training_job.sh " + str(input_data))
     return "done"
-
-#summarize()
+summarize()
 #print(decoder.Decode("abcd 1234566 abcd"))

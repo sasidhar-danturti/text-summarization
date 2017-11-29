@@ -52,8 +52,8 @@ class Vocab:
             #coord.join(threads)
             #coord.join(threads_sub)
 
-vocab = Vocab("gs://text-summarization-webapp.appspot.com/data/data","data/vocab")
-vocab.create_vocab_file()
+# vocab = Vocab("gs://text-summarization-webapp.appspot.com/data/data","data/vocab")
+# vocab.create_vocab_file()
 
 
 
