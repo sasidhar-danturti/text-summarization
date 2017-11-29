@@ -7,26 +7,35 @@ from threading import Thread
 from utility.date_time_utils import DateTimeUtils
 
 
-# Post request
-def initiate_training(job_id):
-    logging.debug("In initiate_training()...")
-    headers = {
-        "Content-Type": "application/json",
-    }
-    res = requests.post("http://35.196.66.17:8080/summarize",
-                        json.dumps({"input": "{}".format(job_id)}))
-    logging.debug("Training request response: {}".format(res.text))
-
-
 # Upload training task.
 class ProcessData:
-    def process_data(self):
-        logging.debug("In process_data()...")
+    def _place_request(self, url, data):
+         return requests.post(url,
+                            json.dumps(data))
+
+    # Post request
+    def _initiate_training(self, job_id):
+        logging.debug("In initiate_training()...")
+        headers = {
+            "Content-Type": "application/json",
+        }
+        res = self._place_request(
+            url="http://35.196.110.160:5000/train",
+            data={"input": "{}".format(job_id)}
+        )
+        logging.debug("Training request response: {}".format(res.text))
+
+    def train_data(self):
+        logging.debug("In train_data()...")
         job_id = "Job_{}".format(DateTimeUtils.time_to_int())
         logging.debug("JobID: {}".format(job_id))
-        t = Thread(target=initiate_training, args=(job_id,))
+        t = Thread(target=self._initiate_training, args=(job_id,))
         t.start()
 
+    def decode_data(self, article):
+        logging.debug("In decode_data()...")
+        self._place_request(
+            url="http://35.196.110.160:5000/decode",
+            data={"input": "{}".format(article)}
+        )
 
-if __name__ == "__main__":
-    ProcessData().process_data()

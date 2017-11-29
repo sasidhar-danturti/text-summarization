@@ -122,17 +122,23 @@ class ProcessArticle(webapp2.RequestHandler):
             # Initiate training
             # Process Data
             try:
-                ProcessData().process_data()
+                ProcessData().train_data()
                 response = {
                     "message": "Training task updated.",
                     "responseType": "Success"
                 }
             except Exception as ex:
+                logging.debug(ex.message)
                 pass
-
         else:
-            # Initiate decoding
-            pass
+            res = ProcessData().decode_data(article=data.get(con.ARTICLE))
+            logging.info(res)
+            if res:
+                response = {
+                    "data": res,
+                    "responseType": "Success"
+                }
+
         logging.info("---------------------------")
         self.response.headers['content-Type'] = 'application/json'
         self.response.out.write(json.dumps(response))
