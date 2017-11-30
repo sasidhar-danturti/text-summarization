@@ -48,6 +48,3 @@ class FileUtils:
             logging.debug("text: {}".format(text))
         json_text = json.loads(text)
         return json_text
-
-
-gs

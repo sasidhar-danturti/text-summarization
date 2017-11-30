@@ -10,7 +10,21 @@ function decodeData(){
        },
        "operationType": "decode"
     }
-    processData(requestData);
+     $.ajax({
+        url: "https://104.196.169.174:5000/decode",
+        type: "POST",
+        contentType: "application/json: charset=utf-8",
+        dataType: "json",
+        data: JSON.stringify({"input": article}),
+        async: false,
+//        timeout: 30000,
+        success: function(data){
+            $("#textResult").text(data.responseType);
+        },
+        error: function(data){
+            alert("error");
+        }
+    });
 }
 
 function trainData() {

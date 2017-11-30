@@ -52,9 +52,14 @@ body {
 
 .btnCommon {
     margin: 0 10px 5px 0;
+    letter-spacing: 1px;
+}
+
+.btnText{
+    padding: 0 3px 0 3px;
 }
 
 .alert-ele{
- width:40%;
- height:10px;
+    width:40%;
+    height:10px;
 }

@@ -31,7 +31,10 @@ import seq2seq_attention_model
 import json
 
 from flask import Flask, request
+from flask_cors import CORS, cross_origin
+
 app = Flask(__name__)
+CORS(app)
 
 bucket_name = "gs://text-summarization-webapp.appspot.com"
 
@@ -128,3 +131,6 @@ def summarize():
     return "done"
 summarize()
 #print(decoder.Decode("abcd 1234566 abcd"))
+
+if __name__ == "__main__":
+    app.run(host='0.0.0.0', ssl_context=('cert.pem', 'key.pem'))
