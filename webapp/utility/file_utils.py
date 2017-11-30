@@ -50,4 +50,4 @@ class FileUtils:
         return json_text
 
 
-FileUtils().create_file("{'article':'test12345'}")
+gs

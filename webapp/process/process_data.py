@@ -7,35 +7,43 @@ from threading import Thread
 from utility.date_time_utils import DateTimeUtils
 
 
+def _initiate_training(job_id):
+    logging.debug("In initiate_training()...")
+    headers = {
+        "Content-Type": "application/json",
+    }
+    res = _place_request(
+        url="http://104.196.169.174:5000/train",
+        data={"input": "{}".format(job_id)},
+        headers=headers
+    )
+    logging.debug("Training request response: {}".format(res.text))
+
+
+def _place_request(url, data, headers):
+    logging.debug("In _place_request()...")
+    return requests.post(url=url, data=json.dumps(data), headers=headers)
+
+
 # Upload training task.
 class ProcessData:
-    def _place_request(self, url, data):
-         return requests.post(url,
-                            json.dumps(data))
-
-    # Post request
-    def _initiate_training(self, job_id):
-        logging.debug("In initiate_training()...")
-        headers = {
-            "Content-Type": "application/json",
-        }
-        res = self._place_request(
-            url="http://35.196.122.218:5000/train",
-            data={"input": "{}".format(job_id)}
-        )
-        logging.debug("Training request response: {}".format(res.text))
-
     def train_data(self):
         logging.debug("In train_data()...")
         job_id = "Job_{}".format(DateTimeUtils.time_to_int())
         logging.debug("JobID: {}".format(job_id))
-        t = Thread(target=self._initiate_training, args=(job_id,))
-        t.start()
+        # t = Thread(target=_initiate_training, args=(job_id,))
+        # t.start()
+        try:
+            _initiate_training(job_id)
+        except Exception:
+            pass
+
 
     def decode_data(self, article):
         logging.debug("In decode_data()...")
-        self._place_request(
-            url="http://35.196.122.218:5000/decode",
-            data={"input": "{}".format(article)}
+        headers = {"Content-Type": "application/json",}
+        _place_request(
+            url="http://104.196.169.174:5000/decode",
+            data={"input": "{}".format(article)},
+            headers=headers
         )
-
