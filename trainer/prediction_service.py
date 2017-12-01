@@ -25,6 +25,7 @@ import sys
 import time
 
 import tensorflow as tf
+import batch_reader
 import data
 import seq2seq_decode_article
 import seq2seq_attention_model
@@ -32,24 +33,17 @@ import json
 
 from flask import Flask, request
 from flask_cors import CORS, cross_origin
-
 app = Flask(__name__)
 CORS(app)
 
-bucket_name = "gs://text-summarization-webapp.appspot.com"
-
-data_path = bucket_name + "/data/data"
-vocab_path = bucket_name + "/data/vocab_data/vocab"
-log_root = bucket_name + "/data/data/log_root"
-
 FLAGS = tf.app.flags.FLAGS
-tf.app.flags.DEFINE_string('data_path',data_path, 'data path')
-tf.app.flags.DEFINE_string('vocab_path',vocab_path, 'Path expression to text vocabulary file.')
+tf.app.flags.DEFINE_string('data_path','gs://text-summarization-webapp.appspot.com/data/data', 'data path')
+tf.app.flags.DEFINE_string('vocab_path','gs://text-summarization-webapp.appspot.com/data/vocab_data/vocab', 'Path expression to text vocabulary file.')
 tf.app.flags.DEFINE_string('article_key', 'article',
                            'tf.Example feature key for article.')
 tf.app.flags.DEFINE_string('abstract_key', 'abstract',
                            'tf.Example feature key for abstract.')
-tf.app.flags.DEFINE_string('log_root',log_root,  'Directory for model root.')
+tf.app.flags.DEFINE_string('log_root','gs://text-summarization-webapp.appspot.com/data/data/log_root',  'Directory for model root.')
 tf.app.flags.DEFINE_string('train_dir', 'log_root/train', 'Directory for train.')
 tf.app.flags.DEFINE_string('eval_dir', 'log_root/eval', 'Directory for eval.')
 tf.app.flags.DEFINE_string('decode_dir', '/home/synerzip/Sasidhar/Learning/Tensorflow/textsum/log_root/decode', 'Directory for decode summaries.')
@@ -93,7 +87,7 @@ hps = seq2seq_attention_model.HParams(
   lr=0.15,  # learning rate
   batch_size=batch_size,
   enc_layers=4,
-  enc_timesteps=120,
+  enc_timesteps=200,
   dec_timesteps=50,
   min_input_len=2,  # discard articles/summaries < than this
   num_hidden=256,  # for rnn cell
@@ -103,6 +97,8 @@ hps = seq2seq_attention_model.HParams(
 
 
 tf.set_random_seed(FLAGS.random_seed)
+
+decode_mdl_hps = hps
 # Only need to restore the 1st step and reuse it since
 # we keep and feed in state for each step's output.
 decode_mdl_hps = hps._replace(dec_timesteps=1)
@@ -115,25 +111,28 @@ decoder = seq2seq_decode_article.BSDecoder(model, data, hps, vocab)
 def decode():
     # print(vocab.CheckVocab(data.PAD_TOKEN))
     print(request.data)
-    input_data = json.loads(request.data).get("input")
-    print(input_data)
+    input_data =json.loads(request.data).get("input")
+    #input_data ="abcd abcdon.dumpsabcd"
+    #print(input_data)
+    #print(input_data.get("input"))
     resp = decoder.Decode(input_data)
     return json.dumps({"responseText": resp})
 
-
 import os
 import vocab
-# @app.route("/train",methods=['POST'])
-def summarize():
+@app.route("/train",methods=['POST'])
+def train():
     # creatthe vocabulary file first and then  submit the job
-    v = vocab.Vocab(data_path,"data/vocab")
+    v = vocab.Vocab("gs://text-summarization-webapp.appspot.com/data/data","data/vocab")
     v.create_vocab_file()
-    #input_data  = json.loads(request.data).get("input")
-    input_data = "test"
-    os.system("sudo sh submit_training_job.sh " + str(input_data))
-    return "done"
-summarize()
+    input_data  = json.loads(request.data)
+    os.system("sudo sh submit_training_job.sh " + str(input_data.get("input")))
+#    os.system("sudo sh submit_training_job.sh test_1")
+    return json.dumps({"responseText": "Submitted training job"})
+
+#summarize()
 #print(decoder.Decode("abcd 1234566 abcd"))
+#decode()
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0')
+    app.run(host='0.0.0.0', ssl_context=('cert.pem', 'key.pem'))
