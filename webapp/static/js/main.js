@@ -13,16 +13,14 @@ function decodeData(){
      $.ajax({
         url: "https://104.196.169.174:5000/decode",
         type: "POST",
-        contentType: "application/json: charset=utf-8",
+        contentType: "application/json",
         dataType: "json",
         data: JSON.stringify({"input": article}),
-        async: false,
-//        timeout: 30000,
         success: function(data){
-            $("#textResult").text(data.responseType);
+            $("#textResult").text(data.responseText);
         },
         error: function(data){
-            alert("error");
+            $("#textResult").text(data.responseText);
         }
     });
 }
@@ -61,7 +59,7 @@ function processData(requestData){
     $.ajax({
         url: "/process-article",
         type: "POST",
-        contentType:"application/json; charset=utf-8",
+        contentType:"application/json",
         dataType: "json",
         data: JSON.stringify(requestData),
         success: function(data){

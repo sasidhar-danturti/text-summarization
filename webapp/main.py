@@ -132,7 +132,7 @@ class ProcessArticle(webapp2.RequestHandler):
                 pass
         else:
             res = ProcessData().decode_data(article=data.get(con.ARTICLE))
-            logging.info(res)
+            logging.info("Decode response: {}".format(res))
             if res:
                 response = {
                     "data": res,

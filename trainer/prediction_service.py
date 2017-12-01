@@ -114,9 +114,12 @@ decoder = seq2seq_decode_article.BSDecoder(model, data, hps, vocab)
 @app.route("/decode", methods=['POST'])
 def decode():
     # print(vocab.CheckVocab(data.PAD_TOKEN))
-    input_data =json.loads((request.data))
-    #print(input_data.get("input"))
-    return decoder.Decode(input_data.get("input"))
+    print(request.data)
+    input_data = json.loads(request.data).get("input")
+    print(input_data)
+    resp = decoder.Decode(input_data)
+    return json.dumps({"responseText": resp})
+
 
 import os
 import vocab
@@ -133,4 +136,4 @@ summarize()
 #print(decoder.Decode("abcd 1234566 abcd"))
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', ssl_context=('cert.pem', 'key.pem'))
+    app.run(host='0.0.0.0')
