@@ -25,13 +25,13 @@
     <nav class="navbar navbar-expand-lg navbar-light">
         <ul class="nav nav-tabs tab-ul">
             <li>
-                <a class="active nav-link labelCommon"
+                <a class="active nav-link labelCommon" onclick="clearText()"
                    data-toggle="tab" href="#data-submission">
                     Data Submission
                 </a>
             </li>
             <li>
-                <a class="nav-link labelCommon"
+                <a class="nav-link labelCommon" onclick="clearText()"
                    data-toggle="tab" href="#decode">
                     Decode
                 </a>
@@ -56,6 +56,10 @@
             <textarea id="textArticle" class="txtCommon"></textarea>
         </div>
     </div>
+    <div class="text-center textInfo">
+        Total word count:&nbsp;<span id="displayCount1">0</span> &nbsp;words.&nbsp;
+        Words left: <span id="wordLeft1">200</span>
+    </div>
 
     <!--Summary / Result-->
     <div class="tab-content" id="pills-tabContent">
@@ -69,6 +73,10 @@
                     <textarea id="textSumm"
                               class="summaryText txtCommon"></textarea>
                 </div>
+            </div>
+            <div class="text-center textInfo">
+                Total word count:&nbsp;<span id="displayCount2">0</span> &nbsp;words.&nbsp;
+                Words left: <span id="wordLeft2">30</span>
             </div>
             <button id="btnSave"
                     class="row trainingEle btn btn-primary align-right btnCommon"
@@ -86,7 +94,7 @@
                     <button id="btnSubmit"
                             class="decodeEle btn btn-primary align-right btnCommon"
                             onclick="decodeData()">
-                        Submit
+                        Summarize
                     </button>
                 </div>
             </div>

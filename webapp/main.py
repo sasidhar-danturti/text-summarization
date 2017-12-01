@@ -130,14 +130,6 @@ class ProcessArticle(webapp2.RequestHandler):
             except Exception as ex:
                 logging.debug(ex.message)
                 pass
-        else:
-            res = ProcessData().decode_data(article=data.get(con.ARTICLE))
-            logging.info("Decode response: {}".format(res))
-            if res:
-                response = {
-                    "data": res,
-                    "responseType": "Success"
-                }
 
         logging.info("---------------------------")
         self.response.headers['content-Type'] = 'application/json'

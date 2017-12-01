@@ -13,7 +13,7 @@ def _initiate_training(job_id):
         "Content-Type": "application/json",
     }
     res = _place_request(
-        url="http://104.196.169.174:5000/train",
+        url="https://104.196.169.174:5000/train",
         data={"input": "{}".format(job_id)},
         headers=headers
     )
@@ -35,15 +35,6 @@ class ProcessData:
         # t.start()
         try:
             _initiate_training(job_id)
-        except Exception:
+        except Exception as ex:
+            logging.debug(ex.message)
             pass
-
-
-    def decode_data(self, article):
-        logging.debug("In decode_data()...")
-        headers = {"Content-Type": "application/json",}
-        _place_request(
-            url="http://104.196.169.174:5000/decode",
-            data={"input": "{}".format(article)},
-            headers=headers
-        )

@@ -6,7 +6,7 @@
 }
 
 .divInBox{
-  margin: 10px 0 15px 0;
+  margin: 10px 0 0 0;
   position: relative;
 }
 
@@ -62,4 +62,9 @@ body {
 .alert-ele{
     width:40%;
     height:10px;
+}
+
+.textInfo{
+    color: #ffc107;
+    margin: 0 0 15px 0;
 }
