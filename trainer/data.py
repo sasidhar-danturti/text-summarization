@@ -105,7 +105,7 @@ class Vocab(object):
     def NumIds(self):
         return self._count
 
-def ExampleGen(data_path, num_epochs=None):
+def ExampleGen(data_path, num_epochs=None,files_to_exclude=None):
     """Generates tf.Examples from path of data files.
   ExampleGen
       Binary data format: <length><blob>. <length> represents the byte size
@@ -121,7 +121,7 @@ def ExampleGen(data_path, num_epochs=None):
 
     If there are multiple files specified, they accessed in a random order.
     """
-
+    tf.logging.info(files_to_exclude)
     epoch = 0
     filenames = tf.train.match_filenames_once(data_path +"/*.json")
     count_num_files = tf.size(filenames)
@@ -142,24 +142,36 @@ def ExampleGen(data_path, num_epochs=None):
 
             for i in range(num_files):
                 csv_file = sess.run(filename)
-                tf_example = example_pb2.Example()
-                filename_queue_sub = tf.train.string_input_producer([csv_file])
-                reader_sub = tf.WholeFileReader()
-                _, file_contents_sub = reader_sub.read(filename_queue_sub)
-                threads_sub = tf.train.start_queue_runners(coord=coord)
-                json_content = sess.run(file_contents_sub)
-                json_text = json.loads(json.dumps(ast.literal_eval(json_content)))
-                article = str(json_text['article'].encode('ascii','ignore'))
-                summary = str(json_text["summary"].encode('ascii','ignore'))
-                tf_example.features.feature['article'].bytes_list.value.extend([article])
-                tf_example.features.feature['abstract'].bytes_list.value.extend([summary])
-                counter = counter +1
-                yield(tf_example)
+                tf.logging.info(csv_file)
+		file_path_parts = str(csv_file).split("/")
+                file_name = file_path_parts[len(file_path_parts)-1].strip("'")
+               # exclude_file=False   
+               # if (not files_to_exclude is None) and (file_name not in  files_to_exclude):
+	       #	    exclude_file = True
+               # if not exclude_file:
+               # tf.logging.info(str(files_to_exclude) + " files to be excluded")
+		#tf.logging.info(file_name)
+		if file_path_parts[len(file_path_parts)-1].strip("'") not in files_to_exclude:  
+	            		
+                    tf.logging.info(csv_file + "not excluded" ) 
+                    tf_example = example_pb2.Example()
+                    filename_queue_sub = tf.train.string_input_producer([csv_file])
+                    reader_sub = tf.WholeFileReader()
+                    _, file_contents_sub = reader_sub.read(filename_queue_sub)
+                    threads_sub = tf.train.start_queue_runners(coord=coord)
+                    json_content = sess.run(file_contents_sub)
+                    json_text = json.loads(json.dumps(ast.literal_eval(json_content)))
+                    article = str(json_text['article'].encode('ascii','ignore'))
+                    summary = str(json_text["summary"].encode('ascii','ignore'))
+                    tf_example.features.feature['article'].bytes_list.value.extend([article])
+                    tf_example.features.feature['abstract'].bytes_list.value.extend([summary])
+                    counter = counter +1
+                    yield(tf_example)
 
 
-            coord.request_stop()
-            coord.join(threads)
-            coord.join(threads_sub)
+            #coord.request_stop()
+            #coord.join(threads)
+            #coord.join(threads_sub)
     epoch += 1
 
         # path_to_json ="data/json"

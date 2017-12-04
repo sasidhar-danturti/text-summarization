@@ -123,13 +123,15 @@ import vocab
 @app.route("/train",methods=['POST'])
 def train():
     # creatthe vocabulary file first and then  submit the job
-    v = vocab.Vocab("gs://text-summarization-webapp.appspot.com/data/data","data/vocab")
-    v.create_vocab_file()
     input_data  = json.loads(request.data)
-    os.system("sudo sh submit_training_job.sh " + str(input_data.get("input")))
-#    os.system("sudo sh submit_training_job.sh test_1")
+    files_to_exclude = str(input_data.get("files_to_exclude"))
+    v = vocab.Vocab("gs://text-summarization-webapp.appspot.com/data/data","data/vocab",files_to_exclude)
+    v.create_vocab_file()
+    os.system("sudo sh submit_training_job.sh {} {}".format(str(input_data.get("input")),files_to_exclude))
+#    os.system("sudo sh submit_training_job.sh test_new_1 HOFLFIvIMGFOvMXI.json,pZWQBtWceqHOxfOZ.json")
     return json.dumps({"responseText": "Submitted training job"})
 
+#train()
 #summarize()
 #print(decoder.Decode("abcd 1234566 abcd"))
 #decode()

@@ -42,7 +42,7 @@ class Batcher(object):
 
   def __init__(self, data_path, vocab, hps,
                article_key, abstract_key, max_article_sentences,
-               max_abstract_sentences, bucketing=True, truncate_input=True):
+               max_abstract_sentences, bucketing=True, truncate_input=True,files_to_exclude=None):
     """Batcher constructor.
 
     Args:
@@ -69,6 +69,12 @@ class Batcher(object):
     self._input_queue = Queue.Queue(QUEUE_NUM_BATCH * self._hps.batch_size)
     self._bucket_input_queue = Queue.Queue(QUEUE_NUM_BATCH)
     self._input_threads = []
+    if not files_to_exclude is None:
+      tf.logging.info(files_to_exclude)
+      self.files_to_exclude = files_to_exclude.split(",")
+    else:
+      tf.logging.info("received nothing")
+      self.files_to_exclude = None
     for _ in xrange(16):
       self._input_threads.append(Thread(target=self._FillInputQueue))
       self._input_threads[-1].daemon = True
@@ -159,8 +165,8 @@ class Batcher(object):
     start_id = self._vocab.WordToId(data.SENTENCE_START)
     end_id = self._vocab.WordToId(data.SENTENCE_END)
     pad_id = self._vocab.WordToId(data.PAD_TOKEN)
-
-    input_gen = self._TextGenerator(data.ExampleGen(self._data_path))
+    print(self.files_to_exclude) 
+    input_gen = self._TextGenerator(data.ExampleGen(self._data_path,files_to_exclude=self.files_to_exclude))
 
     try:
       while True:

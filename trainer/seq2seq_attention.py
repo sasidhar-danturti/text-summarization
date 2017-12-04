@@ -40,7 +40,7 @@ tf.app.flags.DEFINE_string('article_key', 'article',
                            'tf.Example feature key for article.')
 tf.app.flags.DEFINE_string('abstract_key', 'abstract',
                            'tf.Example feature key for abstract.')
-tf.app.flags.DEFINE_string('log_root', 'log_root', 'Directory for model root.')
+tf.app.flags.DEFINE_string('log_root', 'log_root/test', 'Directory for model root.')
 tf.app.flags.DEFINE_string('train_dir', 'log_root/train', 'Directory for train.')
 tf.app.flags.DEFINE_string('eval_dir', 'log_root/eval', 'Directory for eval.')
 tf.app.flags.DEFINE_string('decode_dir', 'log_root/decode', 'Directory for decode summaries.')
@@ -64,7 +64,7 @@ tf.app.flags.DEFINE_bool('truncate_input', False,
                          'examples that are too long are discarded.')
 tf.app.flags.DEFINE_integer('num_gpus', 0, 'Number of gpus used.')
 tf.app.flags.DEFINE_integer('random_seed', 111, 'A seed value for randomness.')
-
+tf.app.flags.DEFINE_string('exclude_files','','file to exclude from training')
 
 def _RunningAvgLoss(loss, running_avg_loss, summary_writer, step, decay=0.999):
   """Calculate the running average of losses."""
@@ -186,12 +186,12 @@ def main(unused_argv):
       emb_dim=128,  # If 0, don't use embedding
       max_grad_norm=2,
       num_softmax_samples=4096)  # If 0, no sampled softmax.
-
+  print(FLAGS.exclude_files)
   batcher = batch_reader.Batcher(
       FLAGS.data_path, vocab, hps, FLAGS.article_key,
       FLAGS.abstract_key, FLAGS.max_article_sentences,
       FLAGS.max_abstract_sentences, bucketing=FLAGS.use_bucketing,
-      truncate_input=FLAGS.truncate_input)
+      truncate_input=FLAGS.truncate_input,files_to_exclude=FLAGS.exclude_files)
 
   tf.set_random_seed(FLAGS.random_seed)
 
