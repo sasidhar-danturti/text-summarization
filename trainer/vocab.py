@@ -5,10 +5,11 @@ import ast
 
 class Vocab:
 
-    def __init__(self,data,vocab_path):
+    def __init__(self,data,vocab_path,files_to_exclude):
         self.data_path=data
         # self.data_path="/home/synerzip/Sasidhar/Learning/Tensorflow/textsum/trainer/data"
-        self.vocab_output= vocab_path
+        self.vocab_output = vocab_path
+	self.files_to_exclude = files_to_exclude
 
     def create_vocab_file(self):
         filenames = tf.train.match_filenames_once(self.data_path +"/*.json")
@@ -26,18 +27,20 @@ class Vocab:
             counter = collections.Counter()
             for i in range(num_files):
                 csv_file = sess.run(filename)
+		file_path_parts = str(csv_file).split("/")
+		if file_path_parts[len(file_path_parts)-1].strip("'") not in self.files_to_exclude:
+                    print(csv_file)
+                    filename_queue_sub = tf.train.string_input_producer([csv_file])
+                    reader_sub = tf.WholeFileReader()
+                    _, file_contents_sub = reader_sub.read(filename_queue_sub)
 
-                filename_queue_sub = tf.train.string_input_producer([csv_file])
-                reader_sub = tf.WholeFileReader()
-                _, file_contents_sub = reader_sub.read(filename_queue_sub)
-
-                threads_sub = tf.train.start_queue_runners(coord=coord)
-                json_content = sess.run(file_contents_sub)
-                json_text = json.loads(json.dumps(ast.literal_eval(json_content)))
-                article = str(json_text['article'].encode('ascii','ignore'))
-                summary = str(json_text["summary"].encode('ascii','ignore'))
-                words = article.split()  + summary.split()
-                counter.update(words)
+                    threads_sub = tf.train.start_queue_runners(coord=coord)
+                    json_content = sess.run(file_contents_sub)
+                    json_text = json.loads(json.dumps(ast.literal_eval(json_content)))
+                    article = str(json_text['article'].encode('ascii','ignore'))
+                    summary = str(json_text["summary"].encode('ascii','ignore'))
+                    words = article.split()  + summary.split()
+                    counter.update(words)
 
             max_words =200000
             with open(self.vocab_output, 'w') as writer:
@@ -52,8 +55,8 @@ class Vocab:
             #coord.join(threads)
             #coord.join(threads_sub)
 
-# vocab = Vocab("gs://text-summarization-webapp.appspot.com/data/data","data/vocab")
-# vocab.create_vocab_file()
+#vocab = Vocab("gs://text-summarization-webapp.appspot.com/data/data","data/vocab")
+#vocab.create_vocab_file()
 
 
 
