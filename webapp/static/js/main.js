@@ -19,7 +19,7 @@ $(document).ready(function() {
     });
 
     $("#textSumm").on("keyup", function() {
-        limit = 30
+        limit = 50
         text = this.value
         words = 0
         if (text !== ""){
@@ -51,7 +51,7 @@ function decodeData(){
         return
     }
      $.ajax({
-        url: "https://104.196.169.174:5000/decode",
+        url: "https://35.196.135.94:5000/decode",
         type: "POST",
         contentType: "application/json",
         dataType: "json",
@@ -66,14 +66,25 @@ function decodeData(){
     });
 }
 
+function getUUID(){
+    return new Date().valueOf();
+}
+
 function trainData() {
-    job_id = "JobID_" + new Date().valueOf();
+    var checkedValues = $("li input[type=checkbox]:checked").map(function () {
+        return $(this).val();
+    });
+
+    job_id = "JobID_" + getUUID();
     $.ajax({
-        url: "https://104.196.169.174:5000/train",
+        url: "https://35.196.135.94:5000/train",
         type: "POST",
         contentType: "application/json",
         dataType: "json",
-        data: JSON.stringify({"input": job_id}),
+        data: JSON.stringify({
+            "input": job_id,
+            "files_to_exclude": checkedValues.get()
+        }),
         success: function(data){
             alert(data.responseText);
         },
@@ -94,10 +105,17 @@ function saveData() {
         alert("Empty Summary!")
         return
     }
+    var title = $("#textFileName").val();
+    if(title == ""){
+        alert("Empty title!")
+        return
+    }
+    file_name = title + '_' + getUUID();
     requestData = {
         "data": {
            "article": article,
-           "summary": summary
+           "summary": summary,
+           "fileName": file_name
         },
         "operationType": "save"
     }
@@ -125,4 +143,51 @@ function clearText(){
     $("#textArticle").val("");
     $("#textResult").val("");
     $("#textSumm").val("");
+    $("#textFileName").val("");
+}
+
+function showArticle(){
+    clearText();
+    $("#boxArticle").show();
+    $(".text-center").show();
+    $( "#trainNav" ).bind("click", renderFileList);
+}
+
+function renderFileList(){
+   clearText();
+   $("#boxArticle").hide();
+   $(".text-center").hide();
+   $.ajax({
+        url: "/files",
+        type: "GET",
+        success: function(data){
+            var files = data.fileList;
+            $("#fileListDisplay").append(renderList(files));
+        },
+        error: function(data){
+            alert("Error");
+        }
+    });
+}
+
+function renderList(files){
+    if ($("#fileList").parent().length){
+        $("#fileList").remove();
+    }
+    var newUl = $('<ul id="fileList" style="list-style-type: none;">');
+
+    $.each(files, function(index, object){
+        var newLi = $("<li class='list-group-item list-group-item-default'/>");
+        newLi.append(
+            '<div class="btn-group" data-toggle="buttons">' +
+            '<label class="btn btn-info">' +
+				'<input type="checkbox" autocomplete="off" value='+ object.fileName +'>' +
+				'<i class="fa fa-check" aria-hidden="true"></i>' +
+			'</label>' +
+			'<span class="text-list">'+ object.fileName +'</span>' +
+			'</div>'
+        );
+        newUl.append(newLi);
+    })
+    return newUl;
 }
