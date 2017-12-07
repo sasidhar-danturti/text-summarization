@@ -19,7 +19,7 @@ $(document).ready(function() {
     });
 
     $("#textSumm").on("keyup", function() {
-        limit = 50
+        limit = 30
         text = this.value
         words = 0
         if (text !== ""){
@@ -51,7 +51,7 @@ function decodeData(){
         return
     }
      $.ajax({
-        url: "https://35.196.135.94:5000/decode",
+        url: "https://35.227.22.13:5000/decode",
         type: "POST",
         contentType: "application/json",
         dataType: "json",
@@ -77,7 +77,7 @@ function trainData() {
 
     job_id = "JobID_" + getUUID();
     $.ajax({
-        url: "https://35.196.135.94:5000/train",
+        url: "https://35.227.22.13:5000/train",
         type: "POST",
         contentType: "application/json",
         dataType: "json",
@@ -110,22 +110,19 @@ function saveData() {
         alert("Empty title!")
         return
     }
+    title = title.replace(/\s+/g, '_')
     file_name = title + '_' + getUUID();
     requestData = {
         "data": {
            "article": article,
            "summary": summary,
-           "fileName": file_name
+           "file_name": file_name,
+           "tag_name": "data"
         },
-        "operationType": "save"
+        "operation_type": "save"
     }
-    processData(requestData);
-}
-
-
-function processData(requestData){
     $.ajax({
-        url: "/process-article",
+        url: "/save-article",
         type: "POST",
         contentType:"application/json",
         dataType: "json",
@@ -161,7 +158,7 @@ function renderFileList(){
         url: "/files",
         type: "GET",
         success: function(data){
-            var files = data.fileList;
+            var files = data.file_list.data;
             $("#fileListDisplay").append(renderList(files));
         },
         error: function(data){
@@ -176,15 +173,14 @@ function renderList(files){
     }
     var newUl = $('<ul id="fileList" style="list-style-type: none;">');
 
-    $.each(files, function(index, object){
+    $.each(files, function(index, file_name){
         var newLi = $("<li class='list-group-item list-group-item-default'/>");
         newLi.append(
             '<div class="btn-group" data-toggle="buttons">' +
             '<label class="btn btn-info">' +
-				'<input type="checkbox" autocomplete="off" value='+ object.fileName +'>' +
-				'<i class="fa fa-check" aria-hidden="true"></i>' +
-			'</label>' +
-			'<span class="text-list">'+ object.fileName +'</span>' +
+			'<input type="checkbox" autocomplete="off" value='+
+			file_name +'>' + '<i class="fa fa-check" aria-hidden="true"></i>' +
+			'</label>' + '<span class="text-list">'+ file_name +'</span>' +
 			'</div>'
         );
         newUl.append(newLi);

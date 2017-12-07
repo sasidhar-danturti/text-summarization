@@ -134,7 +134,7 @@ class FileList(webapp2.RequestHandler):
     def get(self):
         files = FileUtils().get_files_list()
         self.response.headers["content-type"] = "application/json"
-        response_data = {'fileList': files}
+        response_data = {'file_list': files}
         json_res = json.dumps(response_data)
         logging.info("{}".format(json_res))
         self.response.out.write(json_res)
@@ -215,7 +215,7 @@ class LogInfoPage(webapp2.RequestHandler):
 
 app = webapp2.WSGIApplication([
     ('/', HomePage),
-    ('/process-article', SaveArticle),
+    ('/save-article', SaveArticle),
     ('/logs', LogInfoPage),
     ("/files", FileList)
 ])

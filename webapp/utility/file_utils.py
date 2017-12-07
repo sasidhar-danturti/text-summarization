@@ -7,6 +7,9 @@ from random import choice
 from string import ascii_letters
 import constants.constants as con
 from utility.date_time_utils import DateTimeUtils
+from config.application_config import ApplicationConfig
+
+APPLICATION_CONFIGURATION = ApplicationConfig.get_config()
 
 gcs.set_default_retry_params(
     gcs.RetryParams(
@@ -17,8 +20,7 @@ gcs.set_default_retry_params(
 
 class FileUtils:
     def __init__(self):
-        self.bucket_name = "text-summarization-webapp.appspot.com"
-        self.bucket = '/' + self.bucket_name
+        self.bucket_name = '/' + APPLICATION_CONFIGURATION.get(con.BUCKET_NAME)
 
     def get_string(self):
         return ''.join(choice(ascii_letters) for _ in range(16))
@@ -30,8 +32,12 @@ class FileUtils:
             con.SUMMARY: request_data.get(con.SUMMARY)
         }
         file_name = request_data.get(con.FILE_NAME)
+        tag_name = request_data.get(con.TAG_NAME, "data")
         logging.debug("File name: {}".format(file_name) )
-        file_name = self.bucket + '/data/data/{}.json'.format(file_name)
+        file_name = self.bucket_name + "/data/{tag_name}/{file_name}.json".format(
+            tag_name=tag_name,
+            file_name=file_name
+        )
         # The retry_params specified in the open call will override the default
         # retry params for this particular file handle.
         write_retry_params = gcs.RetryParams(backoff_factor=1.1)
@@ -45,7 +51,7 @@ class FileUtils:
     # Reads file data by name.
     def read_file(self, file_name):
         logging.debug("read_file()")
-        file_name = '/' + self.bucket_name + '/' + file_name
+        file_name = self.bucket_name + '/' + file_name
         logging.debug("file name: {}".format(file_name))
         with gcs.open(file_name) as cloudstorage_file:
             text = cloudstorage_file.read()
@@ -56,13 +62,23 @@ class FileUtils:
     # Get files list
     def get_files_list(self):
         logging.debug("In get_files_list()...")
-        path = '/' + self.bucket_name + '/data/data'
-        stats = gcs.listbucket(path)
-        files = []
-        for stat in stats:
-            if ".json" in stat.filename:
-                file_name = re.sub(path, '', stat.filename)
-                files.append({"fileName": file_name})
-        return files
+        tags = {}
+        for stat in gcs.listbucket(self.bucket_name + '/data', delimiter='/'):
+            dir_name = stat.filename
+            for sub_dir in gcs.listbucket(dir_name, delimiter='/'):
+                sub_dir_name = sub_dir.filename
+                if not sub_dir_name == dir_name and sub_dir.is_dir:
+                    files = []
+                    for sub_dir_child in gcs.listbucket(sub_dir_name):
+                        sub_dir_child_name = sub_dir_child.filename
+                        if ".json" in sub_dir_child_name:
+                            files.append(re.sub(
+                                pattern=sub_dir_name,
+                                repl='',
+                                string=sub_dir_child_name
+                            ))
+                    dummy_name = sub_dir_name.replace(dir_name, '')
+                    tags[dummy_name.replace('/', '')] = files
+        return tags
 
 
