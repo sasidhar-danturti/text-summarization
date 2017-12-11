@@ -12,7 +12,18 @@ import constants.constants as con
 # from prediction import Prediction
 from process.process_data import ProcessData
 from utility.file_utils import FileUtils
+import constants.constants as con
 
+
+user_categories = {
+    con.ADMIN: [
+        "sasidhar.danturti@gmail.com",
+        "shubham.yedage52@gmail.com",
+        "mukund@synerzip.com"
+    ],
+    con.VIEWER: []
+}
+user_email = ""
 
 def get_logs(offset=None):
     # Logs are read backwards from the given end time. This specifies to read
@@ -52,39 +63,90 @@ def format_log_entry(entry):
     output += '\n'.join(logs)
     return output
 
+def get_user_role(email):
+    logging.info("In get_user_role()...")
+    is_admin = False
+    if email in user_categories.get(con.ADMIN):
+        is_admin = True
+    return is_admin
+
+def check_user_access(email):
+    logging.info("In check_user_access()")
+    has_access = False
+    if "synerzip" in email or email in user_categories.get(con.ADMIN):
+        has_access = True
+    return has_access
 
 def authorise_user(uri):
+    logging.info("In authorise_user()...")
     user = users.get_current_user()
     url = None
-    if user:
-        logging.debug("User: {}".format(user.nickname()))
-    else:
+    if not user:
         url = users.create_login_url(uri)
+        logging.info("Redirect URL {}".format(url))
     return url
 
 
 class HomePage(webapp2.RequestHandler):
     def get(self):
-        logging.debug("In Class TrainDataPage")
+        logging.info("In Class HomePage")
         # Validate request
-        redirect_url = authorise_user(self.request.uri)
-        if redirect_url:
-            logging.debug("Redirecting")
-            self.redirect(redirect_url)
+        log_in_url = authorise_user(self.request.uri)
+        if log_in_url:
+            logging.info("Redirecting")
+            self.redirect(log_in_url)
+            logging.info("Logged In")
 
-        # If user is logged in redirect to "homepage.html"
-        path = join(dirname(__file__), "homepage.html")
-        self.response.out.write(template.render(path, None))
+        email = ""
+        has_access = False
+        user = users.get_current_user()
+        logout_url = ""
+        if user:
+            email = user.email()
+            logging.info("Email: {}".format(email))
+            logging.info("User: {}".format(user.nickname()))
+            has_access = check_user_access(email=email)
+            logout_url = users.create_logout_url('/')
 
+        if has_access:
+            data = {
+                "log_out_url": logout_url
+            }
+            is_admin = get_user_role(email=email)
+            # If user is admin in redirect to "homepage.html"
+            # else "viewer.html"
+            if is_admin:
+                path = join(dirname(__file__), "homepage.html")
+            else:
+                path = join(dirname(__file__), "viewer.html")
 
-class ProcessArticle(webapp2.RequestHandler):
+            self.response.out.write(template.render(path, data))
+        else:
+            log_out_tag = "<a href='{}'>Click here</a>".format(logout_url)
+            self.response.write(
+                "<html>"
+                "<body>"
+                "Access Denied! {} to log in with a different account."
+                "</body>"
+                "</html>".format(log_out_tag))
+
+class FileList(webapp2.RequestHandler):
+    def get(self):
+        files = FileUtils().get_files_list()
+        self.response.headers["content-type"] = "application/json"
+        response_data = {'file_list': files}
+        json_res = json.dumps(response_data)
+        logging.info("{}".format(json_res))
+        self.response.out.write(json_res)
+
+class SaveArticle(webapp2.RequestHandler):
     def post(self):
         logging.info("---------------------------")
-        # Validate request
-        redirect_url = authorise_user(self.request.uri)
-        if redirect_url:
-            logging.info("Redirecting")
-            self.redirect(redirect_url)
+        # # Validate request
+        # redirect_url = authorise_user(self.request.uri)
+        # if redirect_url:
+        #     logging.info("Redirecting")
+        #     self.redirect(redirect_url)
 
         # Get data.
         data = self.request.body
@@ -98,7 +160,7 @@ class ProcessArticle(webapp2.RequestHandler):
         # Parse data string as json.
         json_data = json.loads(data)
         # Fetch operation type and data
-        operation_type = json_data.get(con.OPERATIONTYPE)
+        operation_type = json_data.get(con.OPERATION_TYPE)
         data = json_data.get(con.DATA)
         logging.info("Operation type: {}".format(operation_type))
         logging.info("Request data: {}".format(data))
@@ -108,7 +170,7 @@ class ProcessArticle(webapp2.RequestHandler):
             }
             # Save response on bucket in file
             file_name = ""
-            file_name = FileUtils().create_file(data=data)
+            file_name = FileUtils().create_file(request_data=data)
             if file_name:
                 response = {
                     "file_name": file_name,
@@ -118,21 +180,21 @@ class ProcessArticle(webapp2.RequestHandler):
                 response = {
                     "responseType": "Failed to save file!"
                 }
-        elif operation_type == con.TRAIN:
-            # Initiate training
-            # Process Data
-            try:
-                ProcessData().train_data()
-                response = {
-                    "message": "Training task updated.",
-                    "responseType": "Success"
-                }
-            except Exception as ex:
-                logging.debug(ex.message)
-                pass
+        # elif operation_type == con.TRAIN:
+        #     # Initiate training
+        #     # Process Data
+        #     try:
+        #         ProcessData().train_data()
+        #         response = {
+        #             "message": "Training task updated.",
+        #             "responseType": "Success"
+        #         }
+        #     except Exception as ex:
+        #         logging.debug(ex.message)
+        #         pass
 
         logging.info("---------------------------")
-        self.response.headers['content-Type'] = 'application/json'
+        self.response.headers["content-Type"] = "application/json"
         self.response.out.write(json.dumps(response))
 
 
@@ -153,6 +215,7 @@ class LogInfoPage(webapp2.RequestHandler):
 
 app = webapp2.WSGIApplication([
     ('/', HomePage),
-    ('/process-article', ProcessArticle),
-    ('/logs', LogInfoPage)
+    ('/save-article', SaveArticle),
+    ('/logs', LogInfoPage),
+    ("/files", FileList)
 ])

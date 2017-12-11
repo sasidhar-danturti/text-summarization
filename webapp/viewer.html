@@ -25,28 +25,13 @@
 </head>
 <body>
     <div id="box" class="container-fluid">
-        <!--<div class="progress progress-striped active">-->
-		    <!--<div class="progress-bar"></div>-->
-	    <!--</div>-->
         <!--Navigation Bar-->
         <nav class="navbar navbar-expand-lg navbar-light">
-            <ul class="nav nav-tabs tab-ul">
-                <li>
-                    <a class="active nav-link labelCommon" onclick="showArticle()"
-                       data-toggle="tab" href="#data-submission">
-                        Data Submission
-                    </a>
-                </li>
+            <ul class="active nav nav-tabs tab-ul">
                 <li>
                     <a class="nav-link labelCommon" onclick="showArticle()"
                        data-toggle="tab" href="#decode">
                         Summarize
-                    </a>
-                </li>
-                <li id="trainNav">
-                    <a class="nav-link labelCommon" onclick="renderFileList()"
-                       data-toggle="tab" href="#train">
-                        Train
                     </a>
                 </li>
                 <ul class="navbar-nav flex-row ml-md-auto d-none d-md-flex">
@@ -75,42 +60,9 @@
             Words left: <span id="wordLeft1">200</span>
         </div>
 
-        <!--Summary / Result-->
+        <!-- Result-->
         <div class="tab-content" id="pills-tabContent">
-            <!--Summary -->
-            <div class="tab-pane active" id="data-submission">
-                <div class="row divInBox">
-                    <div class="col-sm-2">
-                        <h4 class="whiteFont">Summary:</h4>
-                    </div>
-                    <div class="col-sm-10">
-                        <textarea id="textSumm"
-                                  class="summaryText txtCommon"></textarea>
-                    </div>
-                </div>
-                <div class="text-center textInfo">
-                    Total word count:&nbsp;<span id="displayCount2">0</span> &nbsp;words.&nbsp;
-                    Words left: <span id="wordLeft2">30</span>
-                </div>
-                <div class="row divInBox">
-                    <div class="col-sm-2">
-                        <h4 class="whiteFont">Title:</h4>
-                    </div>
-                    <div class="col-sm-3">
-                        <input id="textFileName" type="text" maxlength="12">
-                    </div>
-                    <div class="col-sm-7 textInfo">
-                        Maximum 12 characters
-                    </div>
-                </div>
-                <button id="btnSave"
-                        class="row trainingEle btn btn-primary align-right btnCommon"
-                        onclick="saveData()">
-                    Save Data
-                </button>
-            </div>
-            <!--Result-->
-            <div class="tab-pane" id="decode">
+            <div class="tab-pane active" id="decode">
                 <div class="row">
                     <div class="col-sm-12">
                         <button id="btnSubmit"
@@ -128,23 +80,6 @@
                         <textarea id="textResult"
                                   class="summaryText txtCommon">
                         </textarea>
-                    </div>
-                </div>
-            </div>
-            <!--Train-->
-            <div class="tab-pane" id="train">
-                <div class="col-sm-3 textSugg">
-                        Select the files to exclude.
-                    </div>
-                <div class="row list-row">
-                    <div id="fileListDisplay" class="col-sm-12"></div>
-                </div>
-                <div class="row">
-                    <div class="col-sm-12">
-                        <button class="btn btn-primary align-right btnCommon"
-                            onclick="trainData()">
-                            <span class="btnText">Train</span>
-                        </button>
                     </div>
                 </div>
             </div>
