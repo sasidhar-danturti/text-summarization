@@ -71,21 +71,7 @@ class Vocab(object):
 
             coord.request_stop()
             coord.join(threads)
-            #
 
-            # with open(vocab_file, 'r') as vocab_f:
-            #   for line in vocab_f:
-            #     pieces = line.split()
-            #     if len(pieces) != 2:
-            #       sys.stderr.write('Bad line: %s\n' % line)
-            #       continue
-            #     if pieces[0] in self._word_to_id:
-            #       raise ValueError('Duplicated word: %s.' % pieces[0])
-            #     self._word_to_id[pieces[0]] = self._count
-            #     self._id_to_word[self._count] = pieces[0]
-            #     self._count += 1
-            #     if self._count > max_size:
-            #       raise ValueError('Too many words: >%d.' % max_size)
 
     def CheckVocab(self, word):
         if word not in self._word_to_id:
@@ -121,7 +107,7 @@ def ExampleGen(data_path, num_epochs=None,files_to_exclude=None):
 
     If there are multiple files specified, they accessed in a random order.
     """
-    tf.logging.info(files_to_exclude)
+
     epoch = 0
     filenames = tf.train.match_filenames_once(data_path +"/*.json")
     count_num_files = tf.size(filenames)
@@ -142,18 +128,8 @@ def ExampleGen(data_path, num_epochs=None,files_to_exclude=None):
 
             for i in range(num_files):
                 csv_file = sess.run(filename)
-                tf.logging.info(csv_file)
-		file_path_parts = str(csv_file).split("/")
-                file_name = file_path_parts[len(file_path_parts)-1].strip("'")
-               # exclude_file=False   
-               # if (not files_to_exclude is None) and (file_name not in  files_to_exclude):
-	       #	    exclude_file = True
-               # if not exclude_file:
-               # tf.logging.info(str(files_to_exclude) + " files to be excluded")
-		#tf.logging.info(file_name)
-		if file_path_parts[len(file_path_parts)-1].strip("'") not in files_to_exclude:  
-	            		
-                    tf.logging.info(csv_file + "not excluded" ) 
+                file_path_parts = str(csv_file).split("/")
+                if file_path_parts[len(file_path_parts)-1].strip("'") not in files_to_exclude:
                     tf_example = example_pb2.Example()
                     filename_queue_sub = tf.train.string_input_producer([csv_file])
                     reader_sub = tf.WholeFileReader()
@@ -174,58 +150,6 @@ def ExampleGen(data_path, num_epochs=None,files_to_exclude=None):
             #coord.join(threads_sub)
     epoch += 1
 
-        # path_to_json ="data/json"
-        # json_files = [pos_json for pos_json in os.listdir(path_to_json) if pos_json.endswith('.json')]
-        # file_count= len(json_files)
-        # count = 0
-        #
-        # while True:
-        #   if count >= file_count:
-        #     break
-        #   for index, js in enumerate(json_files):
-        #     tf_example = example_pb2.Example()
-        #     with open(os.path.join(path_to_json, js)) as json_file:
-        #       json_text = json.load(json_file)
-        #       article = str(json_text["article"])
-        #       summary = str(json_text["summary"])
-        #       tf_example.features.feature['article'].bytes_list.value.extend([article])
-        #       tf_example.features.feature['abstract'].bytes_list.value.extend([summary])
-        #       # tf_example_str = tf_example.SerializeToString()
-        #       # str_len = len(tf_example_str)
-        #       # writer.write(struct.pack('q', str_len))
-        #       # writer.write(struct.pack('%ds' % str_len, tf_example_str))
-        #
-        #       count = count +1
-        #       yield tf_example
-        #
-
-
-
-        # filename_queue = tf.train.string_input_producer(filelist)
-        # reader = tf.TextLineReader()
-        #
-        # key, value = reader.read(filename_queue)
-        # record_defaults = [[""]]
-        # col1 = tf.decode_csv(
-        #     value, record_defaults=record_defaults)
-        # features = tf.stack([col1])
-        #
-        # with tf.Session() as sess:
-        #   # Start populating the filename queue.
-        #   coord = tf.train.Coordinator()
-        #   threads = tf.train.start_queue_runners(coord=coord)
-        #
-        #   for i in range(1000):
-        #     # Retrieve a single instance:
-        #     data = sess.run([features])
-        #     str_len = struct.unpack('q', data)[0]
-        #     example_str = struct.unpack('%ds' % str_len, reader.read(str_len))[0]
-        #     yield example_pb2.Example.FromString(example_str)
-        #
-        #   coord.request_stop()
-        #   coord.join(threads)
-
-        # epoch += 1
 
 
 def Pad(ids, pad_id, length):

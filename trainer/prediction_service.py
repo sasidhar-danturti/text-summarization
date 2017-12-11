@@ -21,74 +21,54 @@ Implement "Abstractive Text Summarization using Sequence-to-sequence RNNS and
 Beyond."
 
 """
-import sys
-import time
 
-import tensorflow as tf
-import batch_reader
-import data
-import seq2seq_decode_article
-import seq2seq_attention_model
 import json
 
+import tensorflow as tf
 from flask import Flask, request
-from flask_cors import CORS, cross_origin
+from flask_cors import CORS
+
+import seq2seq_decode_article
+import seq2seq_attention_model
+import vocab
+import data
+
 app = Flask(__name__)
 CORS(app)
 
+BUCKET_NAME ="gs://text-summarization-webapp.appspot.com"
+
+DATA_PATH = BUCKET_NAME + "/data/data"
+VOCAB_PATH = BUCKET_NAME + "/data/vocab_data/vocab"
+LOG_ROOT = BUCKET_NAME + "/models/job_new_1000_steps"
+
+# DATA_PATH = "/home/synerzip/Sasidhar/Learning/Tensorflow/textsum/data/reviews"
+# VOCAB_PATH = "/home/synerzip/Sasidhar/Learning/Tensorflow/textsum/data/vocab_1"
+# LOG_ROOT = "/home/synerzip/Sasidhar/Learning/Tensorflow/textsum/log_root"
+
+
 FLAGS = tf.app.flags.FLAGS
-tf.app.flags.DEFINE_string('data_path','gs://text-summarization-webapp.appspot.com/data/data', 'data path')
-tf.app.flags.DEFINE_string('vocab_path','gs://text-summarization-webapp.appspot.com/data/vocab_data/vocab', 'Path expression to text vocabulary file.')
-tf.app.flags.DEFINE_string('article_key', 'article',
-                           'tf.Example feature key for article.')
-tf.app.flags.DEFINE_string('abstract_key', 'abstract',
-                           'tf.Example feature key for abstract.')
-tf.app.flags.DEFINE_string('log_root','gs://text-summarization-webapp.appspot.com/data/data/log_root',  'Directory for model root.')
-tf.app.flags.DEFINE_string('train_dir', 'log_root/train', 'Directory for train.')
-tf.app.flags.DEFINE_string('eval_dir', 'log_root/eval', 'Directory for eval.')
-tf.app.flags.DEFINE_string('decode_dir', '/home/synerzip/Sasidhar/Learning/Tensorflow/textsum/log_root/decode', 'Directory for decode summaries.')
-tf.app.flags.DEFINE_string('mode', 'decode', 'train/eval/decode mode')
-tf.app.flags.DEFINE_integer('max_run_steps', 10,
-                            'Maximum number of run steps.')
-tf.app.flags.DEFINE_integer('max_article_sentences', 2,
-                            'Max number of first sentences to use from the '
-                            'article')
-tf.app.flags.DEFINE_integer('max_abstract_sentences', 100,
-                            'Max number of first sentences to use from the '
-                            'abstract')
+tf.app.flags.DEFINE_string('data_path',DATA_PATH, 'data path')
+tf.app.flags.DEFINE_string('vocab_path',VOCAB_PATH, 'Path expression to text vocabulary file.')
+tf.app.flags.DEFINE_string('log_root',LOG_ROOT,  'Directory for model root.')
+
 tf.app.flags.DEFINE_integer('beam_size', 4,
                             'beam size for beam search decoding.')
-tf.app.flags.DEFINE_integer('eval_interval_secs', 60, 'How often to run eval.')
-tf.app.flags.DEFINE_integer('checkpoint_secs', 60, 'How often to checkpoint.')
-tf.app.flags.DEFINE_bool('use_bucketing', False,
-                         'Whether bucket articles of similar length.')
-tf.app.flags.DEFINE_bool('truncate_input', False,
-                         'Truncate inputs that are too long. If False, '
-                         'examples that are too long are discarded.')
-tf.app.flags.DEFINE_integer('num_gpus', 0, 'Number of gpus used.')
 tf.app.flags.DEFINE_integer('random_seed', 111, 'A seed value for randomness.')
-
+tf.app.flags.DEFINE_integer('num_gpus', 0, 'Number of gpus used.')
 
 vocab = data.Vocab(FLAGS.vocab_path, 10003)
-#Check for presence of required special tokens.
-#print(vocab.CheckVocab(data.PAD_TOKEN))
-# assert vocab.CheckVocab(data.PAD_TOKEN) > 0
-# assert vocab.CheckVocab(data.UNKNOWN_TOKEN) >= 0
-# assert vocab.CheckVocab(data.SENTENCE_START) > 0
-# assert vocab.CheckVocab(data.SENTENCE_END) > 0
 
 batch_size = 4
-if FLAGS.mode == 'decode':
-    batch_size = FLAGS.beam_size
 
 hps = seq2seq_attention_model.HParams(
-  mode=FLAGS.mode,  # train, eval, decode
+  mode='decode',
   min_lr=0.01,  # min learning rate.
   lr=0.15,  # learning rate
   batch_size=batch_size,
   enc_layers=4,
   enc_timesteps=200,
-  dec_timesteps=50,
+  dec_timesteps=30,
   min_input_len=2,  # discard articles/summaries < than this
   num_hidden=256,  # for rnn cell
   emb_dim=128,  # If 0, don't use embedding
@@ -99,9 +79,11 @@ hps = seq2seq_attention_model.HParams(
 tf.set_random_seed(FLAGS.random_seed)
 
 decode_mdl_hps = hps
+
 # Only need to restore the 1st step and reuse it since
 # we keep and feed in state for each step's output.
 decode_mdl_hps = hps._replace(dec_timesteps=1)
+
 model = seq2seq_attention_model.Seq2SeqAttentionModel(
     decode_mdl_hps, vocab, num_gpus=FLAGS.num_gpus)
 
@@ -109,32 +91,24 @@ decoder = seq2seq_decode_article.BSDecoder(model, data, hps, vocab)
 
 @app.route("/decode", methods=['POST'])
 def decode():
-    # print(vocab.CheckVocab(data.PAD_TOKEN))
     print(request.data)
     input_data =json.loads(request.data).get("input")
-    #input_data ="abcd abcdon.dumpsabcd"
-    #print(input_data)
-    #print(input_data.get("input"))
+    # input_data ="abcd abcdon.dumpsabcd"
     resp = decoder.Decode(input_data)
+
     return json.dumps({"responseText": resp})
 
-import os
-import vocab
+
 @app.route("/train",methods=['POST'])
 def train():
     # creatthe vocabulary file first and then  submit the job
     input_data  = json.loads(request.data)
-    files_to_exclude = str(input_data.get("files_to_exclude"))
+    files_to_exclude = ",".join(input_data.get("files_to_exclude"))
     v = vocab.Vocab("gs://text-summarization-webapp.appspot.com/data/data","data/vocab",files_to_exclude)
     v.create_vocab_file()
     os.system("sudo sh submit_training_job.sh {} {}".format(str(input_data.get("input")),files_to_exclude))
-#    os.system("sudo sh submit_training_job.sh test_new_1 HOFLFIvIMGFOvMXI.json,pZWQBtWceqHOxfOZ.json")
     return json.dumps({"responseText": "Submitted training job"})
 
-#train()
-#summarize()
-#print(decoder.Decode("abcd 1234566 abcd"))
-#decode()
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', ssl_context=('cert.pem', 'key.pem'))
+    app.run(host='0.0.0.0')
